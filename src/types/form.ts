@@ -10,3 +10,10 @@ export interface IFieldsConfig {
 export interface IFields {
     [key: string]: string
 }
+
+export interface IInputProps {
+    id: string
+    label: string
+    defaultValue?: string
+    onFieldChange: (id: string, value: string) => void
+}

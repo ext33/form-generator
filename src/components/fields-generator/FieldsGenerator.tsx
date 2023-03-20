@@ -1,48 +1,68 @@
-import React, { FC, useState } from "react"
+import React, { FC, useEffect, useState } from "react"
 
 import { IFieldsConfig, IFields } from "../../types/form"
+import Input from "../input/Input"
 
 interface IProps {
-    fields: IFieldsConfig[]
+    fieldsConfig: IFieldsConfig[]
+    setFormValid: (val: boolean) => void
     onFieldChange: (val: IFields) => void
 }
 
 /**
- * Компонент для универсальной генерации полей формы
- * @param fields - Массив с описанием конфигурации полей фромы
- * @param onFieldChange - Метод для обновления данных формы при изменении значения в одном из полей
+ * Universal form fields generator component
+ * @param fieldsConfig - Array of fields configuration
+ * @param setFormValid - Method for updating form validate state
+ * @param onFieldChange - Method for fields value update
  */
-const FieldsGenerator: FC<IProps> = ({ fields, onFieldChange }) => {
+const FieldsGenerator: FC<IProps> = ({ fieldsConfig, setFormValid, onFieldChange }) => {
 
-    const [ formFields, setFormFields ] = useState<IFields>({})
+    const [ values, setValues ] = useState<{ [id: string]: string }>(
+        Object.fromEntries(fieldsConfig.map((field) => [ field.id, field.defaultValue || "" ]))
+    )
 
     /**
-    * Метод обработки изменения значения для поля формы
-    * @param event - Обработчик типа React.ChangeEvent<HTMLInputElement>
+    * Field value updater
+    * @param id - Field ID
+    * @param value - Field value
     */
-    const handleChangeFiledInput = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const { id, value } = event.target
-
-        setFormFields({ ...formFields, [id]: value })
-        onFieldChange({ ...formFields, [id]: value })
+    const handleChangeFiledInput = (id: string, value: string) => {
+        setValues({ ...values, [id]: value })
+        onFieldChange({ ...values, [id]: value })
     }
+
+    /**
+     * Validate form required fields method
+     */
+    const handleValidation = () => {
+        const isAllFieldsValid = fieldsConfig.every(
+            (field) => !field.required || (values[field.id] && values[field.id].trim() !== "")
+        )
+        setFormValid(isAllFieldsValid)
+    }
+
+    useEffect(() => {
+        handleValidation()
+    }, [ values ])
 
     return (
         <>
             {
-                fields.map((field) => (
+                fieldsConfig.map((field) => (
                     <div key={field.id}>
-                        <label htmlFor={field.id}>
-                            {field.label}
-                        </label>
-
-                        <input
+                        {
+                            field.required && !values[field.id] && (
+                                <span className="un-form__error">
+                                    *
+                                </span>
+                            )
+                        }
+                        <Input
                             type={field.type}
                             id={field.id}
-                            name={field.id}
-                            defaultValue={field.defaultValue}
-                            required={field.required}
-                            onChange={handleChangeFiledInput}
+                            defaultValue={values[field.id]}
+                            label={field.label}
+                            onFieldChange={handleChangeFiledInput}
                         />
                     </div>
                 ))
