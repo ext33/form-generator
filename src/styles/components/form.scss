@@ -39,17 +39,11 @@
             outline: 1px solid #fcb8aa;
         }
     }
-
-    > span {
-        position: absolute;
-        font-size: 12px;
-        margin-top: -12px;
-    }
 }
 
 .un-form__error-wrapper {
-    font-size: 14px;
-    padding: 5px 0;
+    font-size: 13px;
+    padding: 5px 2px;
 }
 
 .un-form__error {

@@ -1,21 +1,21 @@
-import React, { FC, useEffect, useState } from "react"
+import React, { FC, useState } from "react"
 
 import { IFieldsConfig, IFields } from "../../types/form"
 import Input from "../input/Input"
 
 interface IProps {
     fieldsConfig: IFieldsConfig[]
-    setFormValid: (val: boolean) => void
+    formErrors: { [key: string]: string }
     onFieldChange: (val: IFields) => void
 }
 
 /**
  * Universal form fields generator component
  * @param fieldsConfig - Array of fields configuration
- * @param setFormValid - Method for updating form validate state
+ * @param formErrors - Object of form errors (id : error message)
  * @param onFieldChange - Method for fields value update
  */
-const FieldsGenerator: FC<IProps> = ({ fieldsConfig, setFormValid, onFieldChange }) => {
+const FieldsGenerator: FC<IProps> = ({ fieldsConfig, formErrors, onFieldChange }) => {
 
     const [ values, setValues ] = useState<{ [id: string]: string }>(
         Object.fromEntries(fieldsConfig.map((field) => [ field.id, field.defaultValue || "" ]))
@@ -31,32 +31,11 @@ const FieldsGenerator: FC<IProps> = ({ fieldsConfig, setFormValid, onFieldChange
         onFieldChange({ ...values, [id]: value })
     }
 
-    /**
-     * Validate form required fields method
-     */
-    const handleValidation = () => {
-        const isAllFieldsValid = fieldsConfig.every(
-            (field) => !field.required || (values[field.id] && values[field.id].trim() !== "")
-        )
-        setFormValid(isAllFieldsValid)
-    }
-
-    useEffect(() => {
-        handleValidation()
-    }, [ values ])
-
     return (
         <>
             {
                 fieldsConfig.map((field) => (
                     <div key={field.id}>
-                        {
-                            field.required && !values[field.id] && (
-                                <span className="un-form__error">
-                                    *
-                                </span>
-                            )
-                        }
                         <Input
                             type={field.type}
                             id={field.id}
@@ -64,6 +43,13 @@ const FieldsGenerator: FC<IProps> = ({ fieldsConfig, setFormValid, onFieldChange
                             label={field.label}
                             onFieldChange={handleChangeFiledInput}
                         />
+                        {
+                            formErrors[field.id] && (
+                                <span className="un-form__error un-form__error-wrapper">
+                                    {formErrors[field.id]}
+                                </span>
+                            )
+                        }
                     </div>
                 ))
             }

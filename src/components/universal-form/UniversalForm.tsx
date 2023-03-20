@@ -1,6 +1,12 @@
-import React, { FC, useState } from "react"
+import React, { FC, useEffect, useMemo, useState } from "react"
 
 import { IFields, IFieldsConfig } from "../../types/form"
+import {
+    getEmailFieldsKeys,
+    getRequiredFieldsKeys,
+    validateEmailFields,
+    validateReqFields
+} from "../../utils/validation"
 import FieldsGenerator from "../fields-generator/FieldsGenerator"
 
 interface IProps {
@@ -13,7 +19,11 @@ interface IProps {
 const UniversalForm: FC<IProps> = ({ formTitle, formDescription, formConfig, onSubmit }) => {
 
     const [ formValues, setFormValues ] = useState<IFields>({})
-    const [ formIsValid, setFormIsValid ] = useState<boolean>(false)
+    const [ formErrors, setFormErrors ] = useState<{ [key: string]: string }>({})
+    const [ isValidateStart, setIsValidateStart ] = useState<boolean>(false)
+
+    const requiredFields = useMemo(() => getRequiredFieldsKeys(formConfig), [ formConfig ])
+    const emailFields = useMemo(() => getEmailFieldsKeys(formConfig), [ formConfig ])
 
     /**
      * Fields update handler
@@ -22,6 +32,22 @@ const UniversalForm: FC<IProps> = ({ formTitle, formDescription, formConfig, onS
     const updateFieldsHandler = (updateFields: IFields) => {
         setFormValues(updateFields)
     }
+
+    /**
+     * Fields validate handler
+     */
+    const validateFields = () => {
+        validateReqFields(requiredFields, formValues, setFormErrors)
+        validateEmailFields(emailFields, formValues, setFormErrors)
+    }
+
+    useEffect(() => {
+        if (isValidateStart) {
+            validateFields()
+        } else {
+            setIsValidateStart(true)
+        }
+    }, [ formValues ])
 
     return (
         <form className="un-form">
@@ -39,7 +65,7 @@ const UniversalForm: FC<IProps> = ({ formTitle, formDescription, formConfig, onS
             <div className="un-form__fields">
                 <FieldsGenerator
                     fieldsConfig={formConfig}
-                    setFormValid={setFormIsValid}
+                    formErrors={formErrors}
                     onFieldChange={updateFieldsHandler}
                 />
             </div>
@@ -47,7 +73,7 @@ const UniversalForm: FC<IProps> = ({ formTitle, formDescription, formConfig, onS
             <div className="un-form__bottom">
                 <button
                     className="un-form__submit-button"
-                    disabled={!formIsValid}
+                    disabled={Object.keys(formErrors).length > 0}
                     onClick={() => onSubmit(formValues)}
                     type="button"
                 >
