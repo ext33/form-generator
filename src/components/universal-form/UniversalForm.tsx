@@ -75,7 +75,7 @@ const UniversalForm: FC<IProps> = ({ formTitle, formDescription, formConfig, onS
             <div className="un-form__bottom">
                 <button
                     className="un-form__submit-button"
-                    disabled={isButtonLocked ? true : Object.keys(formErrors).length > 0 }
+                    disabled={isButtonLocked ? true : Object.keys(formErrors).length > 0}
                     onClick={() => onSubmit(formValues)}
                     type="button"
                 >
