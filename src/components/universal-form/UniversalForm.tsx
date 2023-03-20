@@ -21,6 +21,7 @@ const UniversalForm: FC<IProps> = ({ formTitle, formDescription, formConfig, onS
     const [ formValues, setFormValues ] = useState<IFields>({})
     const [ formErrors, setFormErrors ] = useState<{ [key: string]: string }>({})
     const [ isValidateStart, setIsValidateStart ] = useState<boolean>(false)
+    const [ isButtonLocked, setIsButtonLocked ] = useState<boolean>(true)
 
     const requiredFields = useMemo(() => getRequiredFieldsKeys(formConfig), [ formConfig ])
     const emailFields = useMemo(() => getEmailFieldsKeys(formConfig), [ formConfig ])
@@ -44,6 +45,7 @@ const UniversalForm: FC<IProps> = ({ formTitle, formDescription, formConfig, onS
     useEffect(() => {
         if (isValidateStart) {
             validateFields()
+            setIsButtonLocked(false)
         } else {
             setIsValidateStart(true)
         }
@@ -73,7 +75,7 @@ const UniversalForm: FC<IProps> = ({ formTitle, formDescription, formConfig, onS
             <div className="un-form__bottom">
                 <button
                     className="un-form__submit-button"
-                    disabled={Object.keys(formErrors).length > 0}
+                    disabled={isButtonLocked ? true : Object.keys(formErrors).length > 0 }
                     onClick={() => onSubmit(formValues)}
                     type="button"
                 >
